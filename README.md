@@ -31,6 +31,23 @@ CMD ["python", "main.py"]
 * ***COPY requirements.txt requirements.txt*** - копирует файл необходимых зависимостей проекта ***requirements.txt*** в рабочую директорию в Docker;
 * ***RUN pip install --no-cache-dir -r requirements.txt*** - запускает установку необходимых пакетов, перечисленных в файле ***requirements.txt***, при этом заранее отключив кеширование пакетов для уменьшения общего размера образа Docker;
 * ***CMD ["python", "main.py"]*** - запуск команды при старте контейнера. В данном случае это запуск основного файла проекта ***main.py***.
+2) Далее запускаем сборку образа на основании ранее созданного Dockerfile.
+```
+sudo docker build -t telegram_bot_image .
+```
+3) Проверяем создание docker image командой :
+```
+sudo docker images
+```
+4) Далее запускаем сборку docker container на основании docker image (в моем случае в целях повышения безопасности токен бота и API взаимодействий хранятся как переменные окружения, поэтому передача данных параметров необходимо осуществить с помощью параметра -e) командой:
+```
+sudo docker run -e TELEGRAM_BOT_TOKEN={your_bot_token} -e NEURAL_NETWORK_API_KEY={your_neural_network_api_key} -d --name telegram_bot telegram_bot_image
+```
+5) После выводим информацию о запущенных контейнерах (ID, название контейнера и изображения, команда запуска, время создания, статус, порт) и ищем свой контейнер:
+```
+sudo docker ps
+```
+6) Запускаем бота в телеграмме и видим, что бот успешно запущен.
 
 
 
@@ -38,4 +55,3 @@ CMD ["python", "main.py"]
 
 
 
-# TelegramBot-in-Docker
