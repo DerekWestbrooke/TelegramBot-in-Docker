@@ -1,6 +1,12 @@
-# Развертывание TelegramBot в Docker  
- 
-1) Для развертывания бота (https://github.com/DerekWestbrooke/TelegramBot.git) в Docker необходимо в корне проекта создать Dockerfile, который представляет собой инструкцию по созданию Docker-image. В данном случае данный файл выглядит так:
+# Развертывание TelegramBot в Docker и в Docker Compose
+
+Данный репозиторий содержит пример запуска телеграм бота (https://github.com/DerekWestbrooke/TelegramBot.git) двумя способами:
+
+- Отдельный контейнер Docker, в котором развертывается версия бота, использующая базу данных SQLite в качестве основного хранилища данных;
+- Многоконтейнерное приложение при помощи Docker Compose, в котором развертывается версия бота, использующая базу данных PostgreSQL в качестве основного хранилища данных.
+
+## Развертывание в Docker:
+1) Для развертывания бота  в Docker необходимо в корне проекта создать Dockerfile, который представляет собой инструкцию по созданию Docker-image. В данном случае данный файл выглядит так:
 ```
 # Official image python:3.12
 FROM python:3.12
@@ -49,6 +55,53 @@ sudo docker ps
 ```
 6) Запускаем бота в телеграмме и видим, что бот успешно запущен.
 
+## Развертывание в Docker Compose:  
+1) Для развертывания бота  в Docker Compose необходимо в корне проекта создать docker-compose.yml, который содержит описание двух сервисов, необходимых для функционирования бота: сам бот и хранилище данных в виде базы данных PostgreSQL. В данном случае данный файл выглядит так:
+```
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  bot:
+    build: .
+    restart: on-failure
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      TELEGRAM_TOKEN: ${TELEGRAM_BOT_TOKEN}
+    command: python main.py
+
+volumes:
+  pgdata:
+```
+В docker-compose.yml, как и в Dockerfile, каждая строка имеет свое значение:
+* ***version: '3.8'*** - указывает версию синтаксиса для ***docker compose***;
+* ***services:*** - указывает перечень сервисов (контейнеров);
+* ***db:*** - конейнер, в котором будет развернута ***PostgreSQL***;
+* ***image: postgres:14*** -  основа данного контейнера будет образ ***postgres:14*** с ***DockerHub***;
+* ***restart: always*** - контейнер будет перезапускаться при сбоях в работе или при перезагрузке;
+* ***environment: *** - далее будут перечислены переменные окржуения дял настройки базы данных;
+* ***volumes:*** - монтрирование тома pgdata для хранения базы данных;
+* ***ports:*** - проброс портов из контейнера на хост;
+* ***bot:*** - контейнер для развертывания самого бота;
+* ***environment:*** - далее будут перечислены переменные окржуения дял настройки базы данных;
+* ***build: .*** - сборка образа бота по ***Dockerfile*** из пункта выше;
+* ***restart: on-failure*** - перезапуск бота в случае ошибки;
+* ***depends_on:*** - контейнер бота запускается только после контейнера базы данных;
+* ***ommand: python main.py*** - команда, которая запускатся при старте контейнера;
+* ***volumes:*** - объявление тома ***pgdata***. 
 
 
   
