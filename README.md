@@ -100,8 +100,24 @@ volumes:
 * ***build: .*** - сборка образа бота по ***Dockerfile*** из пункта выше;
 * ***restart: on-failure*** - перезапуск бота в случае ошибки;
 * ***depends_on:*** - контейнер бота запускается только после контейнера базы данных;
-* ***ommand: python main.py*** - команда, которая запускатся при старте контейнера;
-* ***volumes:*** - объявление тома ***pgdata***. 
+* ***сommand: python main.py*** - команда, которая запускатся при старте контейнера;
+* ***volumes:*** - объявление тома ***pgdata***.
+2) Заносим значения переменных окружения в файл .env, который лежит в корне с проектом.
+```
+TELEGRAM_BOT_TOKEN=your_bot_api
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_DB=your_postgres_db_name
+```
+3) Выполняем команду в папке с проектом, передав файл .env,в котором храняться все переменные окружения:
+```
+docker compose --env-file .env up -d
+```
+4) Проверяем логи:
+```
+docker compose logs
+```
+5) Если в них ошибок нет, запускааем бота и видим, что он успешно запущен.
 
 
   
